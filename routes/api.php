@@ -35,8 +35,10 @@ Route::middleware(ApiAuthMiddleware::class)->group( function(){
     Route::post('/perumahan', [PerumahanController::class, 'createPerumahan']);
     Route::patch('/perumahan', [PerumahanController::class, 'updatePerumahan']);
     Route::delete('/perumahan', [PerumahanController::class, 'deletePerumahan']);
-    // units-perumahan
+
+    // units
     Route::get('/perumahan-units', [UnitController::class, 'getUnitsPerumahan']);
     Route::get('/perumahan-units/{id}', [UnitController::class, 'getUnitPerumahanById']);
+    Route::post('/unit', [UnitController::class, 'createUnit']);
 
 });
