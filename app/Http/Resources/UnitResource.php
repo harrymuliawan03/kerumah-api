@@ -18,6 +18,7 @@ class UnitResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'kode_unit' => $this->kode_unit,
+            'user_id' => $this->user_id,
             'id_parent' => $this->id_parent,
             'type' => $this->type,
             'status' => $this->status,
@@ -29,6 +30,7 @@ class UnitResource extends JsonResource
             'kota' => $this->kota,
             'kode_pos' => $this->kode_pos,
             'tanggal_mulai' => $this->tanggal_mulai,
+            'tanggal_jatuh_tempo' => $this->tanggal_jatuh_tempo,
         ];
     }
 }

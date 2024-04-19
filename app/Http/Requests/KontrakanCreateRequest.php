@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class PerumahanUpdateRequest extends FormRequest
+class KontrakanCreateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,14 +26,15 @@ class PerumahanUpdateRequest extends FormRequest
     public function rules()
     {
         return [
-            // 'id' => ['required'],
-            'name' => ['nullable', 'max:100'],
-            'alamat' => ['nullable', 'max:100'],
-            'provinsi' => ['nullable', 'max:100'],
-            'kota' => ['nullable', 'max:100'],
-            'kode_pos' => ['nullable', 'max:100'],
-            'periode_pembayaran' => ['nullable', 'max:100'],
-            'kode_unit' => ['nullable', 'max:5'],
+            'name' => ['required', 'max:100'],
+            'alamat' => ['required', 'max:100'],
+            'provinsi' => ['required', 'max:100'],
+            'kota' => ['required', 'max:100'],
+            'kode_pos' => ['required', 'max:100'],
+            'jml_unit' => ['required'],
+            'periode_pembayaran' => ['required'],
+            'kode_unit' => ['required', 'max:5'],
+            'user_id' => ['required'],
         ];
     }
     protected function failedValidation(Validator $validator)

@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Kontrakan;
+use App\ListIdleProperty;
+use App\ListPayment;
 use App\Perumahan;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
@@ -24,15 +27,31 @@ class User extends Model implements Authenticatable
         'password'
     ];
 
-    public function perumahans(): HasMany {
+    public function perumahans(): HasMany
+    {
         return $this->hasMany(Perumahan::class, 'user_id', 'id');
+    }
+
+    public function kontrakans(): HasMany
+    {
+        return $this->hasMany(Kontrakan::class, 'user_id', 'id');
+    }
+
+    public function listPayments(): HasMany
+    {
+        return $this->hasMany(ListPayment::class, 'user_id', 'id');
+    }
+
+    public function listIdleProperties(): HasMany
+    {
+        return $this->hasMany(ListIdleProperty::class, 'user_id', 'id');
     }
 
     public function getAuthIdentifierName()
     {
         return 'name';
     }
-    
+
     public function getAuthIdentifier()
     {
         return $this->name;

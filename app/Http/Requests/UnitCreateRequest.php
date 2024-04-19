@@ -30,6 +30,7 @@ class UnitCreateRequest extends FormRequest
             // 'name' => 'required|string|max:100|unique:units,name',
             'kode_unit' => 'required|string|max:100',
             'id_parent' => 'required|integer',
+            'user_id' => 'required|integer',
             'status' => 'required|in:empty,filled,late',
             'type' => 'required|in:perumahan,kontrakan,kostan',
             'periode_pembayaran' => 'required|in:year,month',
@@ -42,7 +43,8 @@ class UnitCreateRequest extends FormRequest
             'tanggal_mulai' => 'nullable|date',
         ];
     }
-    protected function failedValidation(Validator $validator) {
+    protected function failedValidation(Validator $validator)
+    {
         throw new HttpResponseException(response([
             "errors" => $validator->getMessageBag()
         ], 400));

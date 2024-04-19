@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Perumahan extends Model
+class Kontrakan extends Model
 {
     use SoftDeletes;
-    protected $table = 'perumahans';
+    protected $table = 'kontrakans';
     protected $primaryKey = 'id';
     protected $keyType = 'int';
     public $incrementing = true;

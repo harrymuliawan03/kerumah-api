@@ -7,15 +7,21 @@ use App\Http\Requests\UnitCreateRequest;
 use App\Http\Requests\UnitRequest;
 use App\Http\Requests\UnitUpdateRequest;
 use App\Http\Resources\UnitResource;
+use App\ListIdleProperty;
+use App\ListPayment;
 use App\Unit;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Auth;
 
 class UnitController extends Controller
 {
-    public function getUnitsPerumahan(UnitRequest $request): AnonymousResourceCollection {
+    public function getUnits(UnitRequest $request): JsonResponse
+    {
         try {
             $data = $request->validated();
             $units = Unit::where('type', $data['type'])->where('id_parent', $data['id_parent'])->get();
@@ -23,29 +29,32 @@ class UnitController extends Controller
             if ($units->isEmpty()) {
                 return ApiResponse::error('Unit not found', 404);
             }
-    
-            return UnitResource::collection($units);
+
+            // return UnitResource::collection($units);
+            return response()->json(ApiResponse::success('Units fetched successfully', UnitResource::collection($units)));
         } catch (\Exception $e) {
             // Handle the exception, log it, and return an appropriate response
             return ApiResponse::error('Internal Server Error' . $e->getMessage(), 500);
         }
     }
 
-    public function getUnitPerumahanById(Request $request) {
+    public function getUnitById(Request $request)
+    {
         // dd($request->id);   
         try {
             $unit = Unit::findOrFail($request->id);
             if (!$unit) {
                 return ApiResponse::error('Unit not found', 404);
             }
-
-            return new UnitResource($unit);
+            // return new UnitResource($unit);
+            return response()->json(ApiResponse::success('Units fetched successfully', new UnitResource($unit)));
         } catch (\Exception $e) {
             return ApiResponse::error('Unit not found', 404);
         }
     }
 
-    public function createUnit(UnitCreateRequest $request): JsonResponse {
+    public function createUnit(UnitCreateRequest $request): JsonResponse
+    {
         try {
             $data = $request->validated();
 
@@ -63,57 +72,103 @@ class UnitController extends Controller
                     // dd($lastNumber + 1);
                     $data['name'] = $data['kode_unit'] . '-' . ($lastNumber + 1);
                     dd($data['name']);
-                } 
-                else {
+                } else {
                     echo "No number found in the name attribute.";
                 }
-
+            } else {
             }
-            else{
 
-            }
-    
             // if (Unit::where('name', $data['name'])->exists()) {
             //     return ApiResponse::error('kode unit already registered, try another one.', 400);
             // }
-    
+
             $unit = new Unit($data);
             $unit->save();
-    
+
             return response()->json(ApiResponse::success('Success create perumahan', new UnitResource($unit)), 201);
         } catch (\Exception $e) {
             return ApiResponse::error($e->getMessage(), 500); // Internal Server Error
         }
     }
 
-    public function updateUnit(UnitUpdateRequest $request): JsonResponse {
+    function calculateDueDate($start_date, $period)
+    {
+        // Convert start date to Carbon instance
+        $start_date = Carbon::createFromFormat('Y-m-d', $start_date);
+
+        // Add period based on payment frequency
+        switch ($period) {
+            case 'month':
+                $start_date->addMonth();
+                break;
+            case 'year':
+                $start_date->addYear();
+                break;
+                // You can add more cases for other period types if needed
+            default:
+                // Handle unsupported period types
+                break;
+        }
+
+        // Return the calculated due date
+        return $start_date->format('Y-m-d');
+    }
+
+    public function updateUnit(UnitUpdateRequest $request, $id): JsonResponse
+    {
         try {
+            $user = Auth::user();
             $data = $request->validated();
-            $unit = Unit::findOrFail($data['id']);
+            $unit = Unit::findOrFail($id);
+
+            if (!$unit) {
+                return ApiResponse::error('Unit not found', 404);
+            }
+
+
+
+            if (!empty($data['tanggal_mulai'])) {
+                $data['tanggal_jatuh_tempo'] = $this->calculateDueDate($data['tanggal_mulai'], $data['periode_pembayaran']);
+                ListPayment::create([
+                    'unit_id' => $unit->id,
+                    'user_id' => $user->id,
+                    'payment_date' => $data['tanggal_mulai'],
+                ]);
+            }
+
+            if ($unit->status == 'filled') {
+                if (!empty($data['status']) && $data['status'] == 'empty') {
+                    ListIdleProperty::create([
+                        'unit_id' => $unit->id,
+                        'user_id' => $user->id,
+                    ]);
+                }
+            }
+
             $unit->update($data);
-    
-            return response()->json(ApiResponse::success('Success create perumahan', new UnitResource($unit)), 201);
+
+            return response()->json(ApiResponse::success('Success update unit', new UnitResource($unit)), 200);
         } catch (\Exception $e) {
             return ApiResponse::error($e->getMessage(), 400);
         }
     }
-    
-    
-    // public function deletePerumahan(PerumahanDeleteRequest $request): JsonResponse {
-    //     try {
-    //         $data = $request->validated();
-    //         $perumahan = Perumahan::where('id', $data['id'])->first();
-            
-    //         if(!$perumahan) {
-    //             return ApiResponse::error('Perumahan not found', 400);
-    //         }
 
-    //         $perumahan->delete();
-    
-    //         return response()->json(ApiResponse::success('Perumahan deleted successfully'), 200);
-    //     } catch (QueryException $e) {
-    //         // Handle any database errors
-    //         return ApiResponse::error('Failed to delete Perumahan', 500);
-    //     }
-    // }
+
+    public function deleteUnit(Request $request): JsonResponse
+    {
+        try {
+            $unit = Unit::findOrFail($request->id);
+
+            if (!$unit) {
+                return ApiResponse::error('Unit not found', 400);
+            }
+
+            $unit->delete();
+
+            return response()->json(ApiResponse::success('Unit deleted successfully'), 200);
+        } catch (QueryException $e) {
+            // Handle any database errors
+            return ApiResponse::error('Failed to delete Perumahan', 500);
+        }
+    }
 }

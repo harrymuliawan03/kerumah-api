@@ -18,15 +18,16 @@ use Illuminate\Support\Facades\Auth;
 
 class PerumahanController extends Controller
 {
-    public function getPerumahan(): AnonymousResourceCollection {
+    public function getPerumahan(): AnonymousResourceCollection
+    {
         try {
             $user = Auth::user();
             $perumahans = Perumahan::where('user_id', $user->id)->get();
-    
+
             if ($perumahans->isEmpty()) {
                 return ApiResponse::error('Perumahan not found', 404);
             }
-    
+
             return PerumahanResource::collection($perumahans);
         } catch (\Exception $e) {
             // Handle the exception, log it, and return an appropriate response
@@ -34,7 +35,8 @@ class PerumahanController extends Controller
         }
     }
 
-    public function getPerumahanById(Request $request) {
+    public function getPerumahanById(Request $request)
+    {
 
         try {
             $perumahan = Perumahan::findOrFail($request->id);
@@ -44,18 +46,19 @@ class PerumahanController extends Controller
         }
     }
 
-    public function createPerumahan(PerumahanCreateRequest $request): JsonResponse {
+    public function createPerumahan(PerumahanCreateRequest $request): JsonResponse
+    {
         $data = $request->validated();
+        $user = Auth::user();
 
-        
-        if(Perumahan::where('kode_unit', $data['kode_unit'])->count() == 1) {
+        if (Perumahan::where('kode_unit', $data['kode_unit'])->count() == 1) {
             return ApiResponse::error('kode unit already registered, try another one.', 400);
         }
 
-        
+
         $perumahan = new Perumahan($data);
         $perumahan->save();
-        
+
         // Initialize an array to store all units
         $units = [];
 
@@ -65,6 +68,7 @@ class PerumahanController extends Controller
                 'name' => $data['kode_unit'] . '-' . ($i + 1),
                 'kode_unit' => $data['kode_unit'],
                 'id_parent' => $perumahan->id,
+                'user_id' => $user->id,
                 'type' => 'perumahan',
                 'status' => 'empty',
                 // Set other attributes of Unit here
@@ -74,14 +78,15 @@ class PerumahanController extends Controller
         // Save all units in one go
         Unit::insert($units);
 
-            return response()->json(ApiResponse::success('Success create perumahan', new PerumahanResource($perumahan)), 201);
-        }
+        return response()->json(ApiResponse::success('Success create perumahan', new PerumahanResource($perumahan)), 201);
+    }
 
-    public function updatePerumahan(PerumahanUpdateRequest $request): JsonResponse {
+    public function updatePerumahan(PerumahanUpdateRequest $request, $id): JsonResponse
+    {
         $data = $request->validated();
-        $perumahan = Perumahan::where('id', $data['id'])->first();
-        
-        if(!$perumahan) {
+        $perumahan = Perumahan::where('id', $id)->first();
+
+        if (!$perumahan) {
             return ApiResponse::error('Perumahan not found', 400);
         }
 
@@ -89,18 +94,19 @@ class PerumahanController extends Controller
 
         return response()->json(ApiResponse::success('Success create perumahan', new PerumahanResource($perumahan)), 201);
     }
-    
-    public function deletePerumahan(PerumahanDeleteRequest $request): JsonResponse {
+
+    public function deletePerumahan(PerumahanDeleteRequest $request): JsonResponse
+    {
         try {
             $data = $request->validated();
             $perumahan = Perumahan::where('id', $data['id'])->first();
-            
-            if(!$perumahan) {
+
+            if (!$perumahan) {
                 return ApiResponse::error('Perumahan not found', 400);
             }
 
             $perumahan->delete();
-    
+
             return response()->json(ApiResponse::success('Perumahan deleted successfully'), 200);
         } catch (QueryException $e) {
             // Handle any database errors

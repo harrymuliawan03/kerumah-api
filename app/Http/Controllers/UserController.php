@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ApiResponse;
 use App\Http\Requests\UserLoginRequest;
 use App\Http\Requests\UserRegisterRequest;
 use App\Http\Requests\UserUpdateRequest;
@@ -16,69 +17,76 @@ use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
-    public function register(UserRegisterRequest $request): JsonResponse {
-        $data = $request->validated();
-        
-        if(User::where('email', $data['email'])->count() == 1) {
-            throw new HttpResponseException(response([
-                'errors' => [
-                    'email' => [
-                        "email already registered.",
-                    ]
-                ]
-            ], 400));
-        }
+    public function register(UserRegisterRequest $request): JsonResponse
+    {
+        try {
+            $data = $request->validated();
 
-        $user = new User($data);
-        $user->password = Hash::make($data['password']);
-        $user->save();
+            if (User::where('email', $data['email'])->count() == 1) {
+                return ApiResponse::error('Email already registered.', 400);
+            }
 
-        return (new UserResource($user))->response()->setStatusCode(201);
-    }
-
-    public function login(UserLoginRequest $request): UserResource {
-        $data = $request->validated();
-
-        $user = User::where('email', $data['email'])->first();
-
-        if(!$user || !Hash::check($data['password'], $user->password)){
-            throw new HttpResponseException(response([
-                'errors' => [
-                    'messages' => [
-                        'Username or password wrong'
-                    ]
-                ]
-            ], 400));
-        }
-
-        $user->token = Str::uuid()->toString();
-        $user->save();
-
-        return new UserResource($user);
-
-    }
-
-    public function getUser(Request $request): UserResource {
-        $user = Auth::user();
-
-        return new UserResource($user);
-    }
-
-    public function updateUser(UserUpdateRequest $request): UserResource {
-        $data = $request->validated();
-        
-        $user = Auth::user();
-
-        if(isset($data['name'])) {
-            $user->name = $data['name'];
-        }
-    
-        if(isset($data['password'])){
+            $user = new User($data);
             $user->password = Hash::make($data['password']);
+            $user->save();
+
+            return response()->json(ApiResponse::success('Register Successfully', new UserResource($user)), 201);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal Server Error: ' . $e->getMessage(), 500);
         }
+    }
 
-        $user->save();
+    public function login(UserLoginRequest $request): JsonResponse
+    {
+        try {
+            $data = $request->validated();
 
-        return new UserResource($user);
+            $user = User::where('email', $data['email'])->first();
+
+            if (!$user || !Hash::check($data['password'], $user->password)) {
+                return ApiResponse::error('Username or password wrong', 400);
+            }
+
+            $user->token = Str::uuid()->toString();
+            $user->save();
+
+            return response()->json(ApiResponse::success('Login Successfully', new UserResource($user)), 201);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal Server Error: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function getUser(Request $request): JsonResponse
+    {
+        try {
+            $user = Auth::user();
+
+            return response()->json(ApiResponse::success('Get User Successfully', new UserResource($user)), 201);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal Server Error: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function updateUser(UserUpdateRequest $request): JsonResponse
+    {
+        try {
+            $data = $request->validated();
+
+            $user = Auth::user();
+
+            if (isset($data['name'])) {
+                $user->name = $data['name'];
+            }
+
+            if (isset($data['password'])) {
+                $user->password = Hash::make($data['password']);
+            }
+
+            $user->save();
+
+            return response()->json(ApiResponse::success('Update User Successfully', new UserResource($user)), 201);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal Server Error: ' . $e->getMessage(), 500);
+        }
     }
 }

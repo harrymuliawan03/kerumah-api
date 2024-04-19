@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Helpers\ApiResponse;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -32,9 +33,22 @@ class UserRegisterRequest extends FormRequest
         ];
     }
 
-    protected function failedValidation(Validator $validator) {
+    protected function failedValidation(Validator $validator)
+    {
+        $errors = $validator->getMessageBag()->all();
+
+        // Convert error messages into arrays if they are strings
+        foreach ($errors as &$error) {
+            if (!is_array($error)) {
+                $error = [$error];
+            }
+        }
+
         throw new HttpResponseException(response([
-            "errors" => $validator->getMessageBag()
+            "success" => false,
+            "message" => array_merge(...array_values($errors)),
+            "data" => null
         ], 400));
+        // return ApiResponse::error($validator->getMessageBag(), 400);
     }
 }

@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class PerumahanResource extends JsonResource
+class KontrakanResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -19,7 +19,6 @@ class PerumahanResource extends JsonResource
         $unitCount = $units->where('type', 'perumahan')->count();
         $unitAvailable = $units->where('status', 'empty')->count();
         $unitFilled = $units->where('status', 'filled')->count();
-
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -27,6 +26,7 @@ class PerumahanResource extends JsonResource
             'kota' => $this->kota,
             'kode_pos' => $this->kode_pos,
             'jml_unit' => $this->jml_unit,
+            'user_id' => $this->user_id,
             'periode_pembayaran' => $this->periode_pembayaran,
             'kode_unit' => $this->kode_unit,
             'unit_count' => $unitCount,
