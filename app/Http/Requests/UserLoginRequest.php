@@ -32,8 +32,19 @@ class UserLoginRequest extends FormRequest
     }
     
     protected function failedValidation(Validator $validator) {
+       $errors = $validator->getMessageBag()->all();
+
+        // Convert error messages into arrays if they are strings
+        foreach ($errors as &$error) {
+            if (!is_array($error)) {
+                $error = [$error];
+            }
+        }
+
         throw new HttpResponseException(response([
-            "errors" => $validator->getMessageBag()
+            "success" => false,
+            "message" => array_merge(...array_values($errors)),
+            "data" => null
         ], 400));
     }
 }

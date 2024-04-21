@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
+Route::get('/user/current-byToken', [UserController::class, 'getUserByToken']);
 
 Route::middleware(ApiAuthMiddleware::class)->group(function () {
     Route::get('/user/current', [UserController::class, 'getUser']);
@@ -53,5 +54,5 @@ Route::middleware(ApiAuthMiddleware::class)->group(function () {
     Route::delete('/unit/{id}', [UnitController::class, 'deleteUnit']);
 
     // dashboard
-    Route::get('/dashboard', [DashboardController::class, 'getCounts']);
+    Route::get('/data-calculation', [DashboardController::class, 'getCalculation']);
 });

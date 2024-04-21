@@ -32,11 +32,11 @@ class DashboardController extends Controller
         return $countOverdue;
     }
 
-    public function getCounts(Request $request): JsonResponse
+    public function getCalculation(Request $request): JsonResponse
     {
         try {
             $userId = Auth::user()->id;
-            $units = Unit::where('user_id', 0)->get();
+            $units = Unit::where('user_id', $userId)->get();
 
             if ($units->isEmpty()) {
                 return ApiResponse::error('Unit not found', 404);
@@ -105,6 +105,9 @@ class DashboardController extends Controller
                     $idlePropertyCountsPerYear[$year] = $idlePropertyCounts[$year] ?? 0;
                 }
             }
+            $years = array_map(function ($year) {
+                return (string)$year;
+            }, $years);
 
             $data['labels'] = $years;
             $data['list_payment_late'] = $paymentLateCounts;

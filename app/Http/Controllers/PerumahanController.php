@@ -18,17 +18,18 @@ use Illuminate\Support\Facades\Auth;
 
 class PerumahanController extends Controller
 {
-    public function getPerumahan(): AnonymousResourceCollection
+    public function getPerumahan(): JsonResponse
     {
         try {
             $user = Auth::user();
             $perumahans = Perumahan::where('user_id', $user->id)->get();
 
             if ($perumahans->isEmpty()) {
-                return ApiResponse::error('Perumahan not found', 404);
+                return response()->json(ApiResponse::error('Perumahan not found', 404));
             }
 
-            return PerumahanResource::collection($perumahans);
+            return response()->json(ApiResponse::success('Get data successfully', PerumahanResource::collection($perumahans)));
+            // return PerumahanResource::collection($perumahans);
         } catch (\Exception $e) {
             // Handle the exception, log it, and return an appropriate response
             return ApiResponse::error('Internal Server Error' . $e->getMessage(), 500);

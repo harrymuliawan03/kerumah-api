@@ -67,6 +67,24 @@ class UserController extends Controller
         }
     }
 
+    public function getUserByToken(Request $request): JsonResponse
+    {
+        $token = $request->bearerToken();
+        try {
+            if($token){
+                $user = User::where('token', $token)->first();
+            }
+
+            if(!$token || !$user) {
+                return ApiResponse::error('Token or User not found', 400);
+            }
+            return response()->json(ApiResponse::success('Get User Successfully', new UserResource($user)), 200);
+        } catch (\Exception $e) {
+            return ApiResponse::error('Internal Server Error: ' . $e->getMessage(), 500);
+        }
+    }
+
+
     public function updateUser(UserUpdateRequest $request): JsonResponse
     {
         try {
