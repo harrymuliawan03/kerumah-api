@@ -41,7 +41,7 @@ class PerumahanController extends Controller
 
         try {
             $perumahan = Perumahan::findOrFail($request->id);
-            return new PerumahanResource($perumahan);
+            return response()->json(ApiResponse::success('Perumahans fetched successfully', new PerumahanResource($perumahan)));
         } catch (ModelNotFoundException $e) {
             return ApiResponse::error('Perumahan not found', 404);
         }
