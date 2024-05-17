@@ -16,16 +16,11 @@ class DashboardController extends Controller
 {
     public function countOverdueItems($data)
     {
-        $currentDate = Carbon::now();
         $countOverdue = 0;
 
         foreach ($data as $item) {
-            if (!empty($item['tanggal_jatuh_tempo'])) {
-                $dueDate = Carbon::createFromFormat('Y-m-d', $item['tanggal_jatuh_tempo']);
-
-                if ($currentDate->greaterThan($dueDate)) {
-                    $countOverdue++;
-                }
+            if ($item->isLate) {
+                $countOverdue++;
             }
         }
 
@@ -37,6 +32,8 @@ class DashboardController extends Controller
         try {
             $userId = Auth::user()->id;
             $units = Unit::where('user_id', $userId)->get();
+            $listPayments = ListPayment::where('user_id', $userId)->get();
+            $listIdleProperties = ListIdleProperty::where('user_id', $userId)->get();
 
             if ($units->isEmpty()) {
                 return ApiResponse::error('Unit not found', 404);
@@ -46,10 +43,8 @@ class DashboardController extends Controller
             $data['total_units'] = $units->count();
             $data['available_units'] = $units->where('status', 'empty')->count();
             $data['filled_units'] = $units->where('status', 'filled')->count();
-            $data['late_payment_count'] = $this->countOverdueItems($units);
+            $data['late_payment_count'] = $this->countOverdueItems($listPayments);
 
-            $listPayments = ListPayment::where('user_id', 0)->get();
-            $listIdleProperties = ListIdleProperty::where('user_id', 2)->get();
             // dd($listIdleProperties->toArray());
 
             // Get the current year

@@ -19,6 +19,7 @@ class CreateListPaymentsTable extends Migration
             $table->unsignedBigInteger('user_id');
             $table->boolean('isLate')->default(false);
             $table->date('payment_date');
+            $table->date('due_date');
             $table->timestamp('deleted_at')->nullable();
             $table->timestamps();
 

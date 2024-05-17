@@ -20,6 +20,7 @@ class ListPayment extends Model
         'user_id',
         'isLate',
         'payment_date',
+        'due_date',
     ];
 
     public function unit()

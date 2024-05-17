@@ -52,6 +52,7 @@ Route::middleware(ApiAuthMiddleware::class)->group(function () {
     Route::get('/unit/{id}', [UnitController::class, 'getUnitById']);
     Route::patch('/unit/{id}', [UnitController::class, 'updateUnit']);
     Route::delete('/unit/{id}', [UnitController::class, 'deleteUnit']);
+    Route::post('/unit-payment/{id}', [UnitController::class, 'bayarUnit']);
 
     // dashboard
     Route::get('/data-calculation', [DashboardController::class, 'getCalculation']);

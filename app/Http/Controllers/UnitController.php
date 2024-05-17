@@ -128,15 +128,27 @@ class UnitController extends Controller
 
 
             if (!empty($data['tanggal_mulai'])) {
-                $data['tanggal_jatuh_tempo'] = $this->calculateDueDate($data['tanggal_mulai'], $data['periode_pembayaran']);
-                ListPayment::create([
-                    'unit_id' => $unit->id,
-                    'user_id' => $user->id,
-                    'payment_date' => $data['tanggal_mulai'],
-                ]);
+                $date1 = Carbon::createFromFormat('Y-m-d', $unit->tanggal_mulai);
+                $date2 = Carbon::createFromFormat('Y-m-d', $data['tanggal_mulai']);
+                if ($date1->lt($date2)) {
+                    $data['tanggal_jatuh_tempo'] = $this->calculateDueDate($data['tanggal_mulai'], $data['periode_pembayaran']);
+                    ListPayment::create([
+                        'unit_id' => $unit->id,
+                        'user_id' => $user->id,
+                        'payment_date' => $data['tanggal_mulai'],
+                    ]);
+                }
+            }
+            if (!empty($data['status']) && $data['status'] === 'empty') {
+                $data['tanggal_jatuh_tempo'] = null;
+                $data['tanggal_mulai_kontrakan'] = null;
             }
 
+
             if ($unit->status == 'filled') {
+                if (isset($data['tanggal_mulai_kontrakan'])) {
+                    unset($data['tanggal_mulai_kontrakan']); // Remove the field from data
+                }
                 if (!empty($data['status']) && $data['status'] == 'empty') {
                     ListIdleProperty::create([
                         'unit_id' => $unit->id,
@@ -148,6 +160,40 @@ class UnitController extends Controller
             $unit->update($data);
 
             return response()->json(ApiResponse::success('Success update unit', new UnitResource($unit)), 200);
+        } catch (\Exception $e) {
+            return ApiResponse::error($e->getMessage(), 400);
+        }
+    }
+
+    public function bayarUnit($id): JsonResponse
+    {
+        try {
+            $user = Auth::user();
+            $unit = Unit::findOrFail($id);
+
+            if (!$unit) {
+                return ApiResponse::error('Unit not found', 404);
+            }
+
+            $dueDate = Carbon::createFromFormat('Y-m-d', $unit->tanggal_jatuh_tempo);
+            $currentDate = Carbon::now();
+            $monthsDifference = $currentDate->diffInMonths($dueDate);
+            $isLate = ($monthsDifference >= 1) ? 1 : 0;
+            if ($currentDate->gte($dueDate)) {
+                ListPayment::create([
+                    'unit_id' => $unit->id,
+                    'user_id' => $user->id,
+                    'payment_date' => $currentDate,
+                    'due_date' => $unit->tanggal_jatuh_tempo,
+                    'isLate' => $isLate
+                ]);
+                $unit->tanggal_jatuh_tempo = $this->calculateDueDate($currentDate->format('Y-m-d'), $unit->periode_pembayaran);
+                $unit->save();
+            } else {
+                return ApiResponse::error('Payment failed', 404);
+            }
+
+            return response()->json(ApiResponse::success('Payment Successfully !', new UnitResource($unit)), 200);
         } catch (\Exception $e) {
             return ApiResponse::error($e->getMessage(), 400);
         }
