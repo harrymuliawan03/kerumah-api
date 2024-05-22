@@ -15,8 +15,8 @@ class PerumahanResource extends JsonResource
     public function toArray($request)
     {
         // Get the count of units owned by the user
-        $units = $this->units()->where('id_parent', $this->id)->get();
-        $unitCount = $units->where('type', 'perumahan')->count();
+        $units = $this->units()->where('id_parent', $this->id)->where('type', 'perumahan')->get();
+        $unitCount = $units->count();
         $unitAvailable = $units->where('status', 'empty')->count();
         $unitFilled = $units->where('status', 'filled')->count();
 

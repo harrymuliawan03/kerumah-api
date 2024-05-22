@@ -40,6 +40,7 @@ class UserController extends Controller
     {
         try {
             $data = $request->validated();
+            // dd($data['email']);
 
             $user = User::where('email', $data['email'])->first();
 
@@ -71,11 +72,11 @@ class UserController extends Controller
     {
         $token = $request->bearerToken();
         try {
-            if($token){
+            if ($token) {
                 $user = User::where('token', $token)->first();
             }
 
-            if(!$token || !$user) {
+            if (!$token || !$user) {
                 return ApiResponse::error('Token or User not found', 400);
             }
             return response()->json(ApiResponse::success('Get User Successfully', new UserResource($user)), 200);

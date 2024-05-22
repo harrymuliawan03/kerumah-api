@@ -18,17 +18,18 @@ use Illuminate\Support\Facades\Auth;
 
 class KontrakanController extends Controller
 {
-    public function getKontrakan()
+    public function getKontrakan(): JsonResponse
     {
         try {
             $user = Auth::user();
             $kontrakans = Kontrakan::where('user_id', $user->id)->get();
 
             if ($kontrakans->isEmpty()) {
-                return ApiResponse::error('Kontrakan not found', 404);
+                return response()->json(ApiResponse::error('Kontrakan not found', 404));
             }
 
-            return KontrakanResource::collection($kontrakans);
+            return response()->json(ApiResponse::success('Get data successfully', KontrakanResource::collection($kontrakans)));
+            // return KontrakanResource::collection($kontrakans);
         } catch (\Exception $e) {
             // Handle the exception, log it, and return an appropriate response
             return ApiResponse::error('Internal Server Error' . $e->getMessage(), 500);
@@ -40,7 +41,7 @@ class KontrakanController extends Controller
 
         try {
             $kontrakan = Kontrakan::findOrFail($request->id);
-            return new KontrakanResource($kontrakan);
+            return response()->json(ApiResponse::success('Kontrakans fetched successfully', new KontrakanResource($kontrakan)));
         } catch (ModelNotFoundException $e) {
             return ApiResponse::error('Kontrakan not found', 404);
         }
@@ -51,12 +52,11 @@ class KontrakanController extends Controller
         $data = $request->validated();
         $user = Auth::user();
 
-
         if (Kontrakan::where('kode_unit', $data['kode_unit'])->count() == 1) {
             return ApiResponse::error('kode unit already registered, try another one.', 400);
         }
 
-
+        $data['user_id'] = $user->id;
         $kontrakan = new Kontrakan($data);
         $kontrakan->save();
 
@@ -68,10 +68,12 @@ class KontrakanController extends Controller
             $units[] = [
                 'name' => $data['kode_unit'] . '-' . ($i + 1),
                 'kode_unit' => $data['kode_unit'],
-                'user_id' => $user->id,
                 'id_parent' => $kontrakan->id,
+                'user_id' => $user->id,
                 'type' => 'kontrakan',
                 'status' => 'empty',
+                'purchase_type' => 'sewa',
+                'tenor' => 0,
                 // Set other attributes of Unit here
             ];
         }
@@ -79,7 +81,7 @@ class KontrakanController extends Controller
         // Save all units in one go
         Unit::insert($units);
 
-        return response()->json(ApiResponse::success('Success create perumahan', new KontrakanResource($kontrakan)), 201);
+        return response()->json(ApiResponse::success('Success create Kontrakan', new KontrakanResource($kontrakan)), 201);
     }
 
     public function updateKontrakan(KontrakanUpdateRequest $request, $id): JsonResponse
@@ -93,14 +95,13 @@ class KontrakanController extends Controller
 
         $kontrakan->update($data);
 
-        return response()->json(ApiResponse::success('Success create Kontrakan', new KontrakanResource($kontrakan)), 201);
+        return response()->json(ApiResponse::success('Success update Kontrakan', new KontrakanResource($kontrakan)), 201);
     }
 
-    public function deleteKontrakan(KontrakanDeleteRequest $request): JsonResponse
+    public function deleteKontrakan($id): JsonResponse
     {
         try {
-            $data = $request->validated();
-            $kontrakan = Kontrakan::where('id', $data['id'])->first();
+            $kontrakan = Kontrakan::where('id', $id)->first();
 
             if (!$kontrakan) {
                 return ApiResponse::error('Kontrakan not found', 400);

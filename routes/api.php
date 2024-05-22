@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KontrakanController;
+use App\Http\Controllers\KostanController;
 use App\Http\Controllers\PerumahanController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UserController;
@@ -37,14 +38,21 @@ Route::middleware(ApiAuthMiddleware::class)->group(function () {
     Route::get('/perumahan/{id}', [PerumahanController::class, 'getPerumahanById']);
     Route::post('/perumahan', [PerumahanController::class, 'createPerumahan']);
     Route::patch('/perumahan/{id}', [PerumahanController::class, 'updatePerumahan']);
-    Route::delete('/perumahan', [PerumahanController::class, 'deletePerumahan']);
+    Route::delete('/perumahan/{id}', [PerumahanController::class, 'deletePerumahan']);
 
-    //perumahan 
-    Route::get('/kontrakan', [KontrakanController::class, 'getkontrakan']);
-    Route::get('/kontrakan/{id}', [kontrakanController::class, 'getkontrakanById']);
-    Route::post('/kontrakan', [kontrakanController::class, 'createkontrakan']);
-    Route::patch('/kontrakan/{id}', [kontrakanController::class, 'updatekontrakan']);
-    Route::delete('/kontrakan', [kontrakanController::class, 'deletekontrakan']);
+    //kontrakan 
+    Route::get('/kontrakan', [KontrakanController::class, 'getKontrakan']);
+    Route::get('/kontrakan/{id}', [kontrakanController::class, 'getKontrakanById']);
+    Route::post('/kontrakan', [kontrakanController::class, 'createKontrakan']);
+    Route::patch('/kontrakan/{id}', [kontrakanController::class, 'updateKontrakan']);
+    Route::delete('/kontrakan/{id}', [kontrakanController::class, 'deleteKontrakan']);
+
+    //kostan 
+    Route::get('/kostan', [KostanController::class, 'getKostan']);
+    Route::get('/kostan/{id}', [KostanController::class, 'getKostanById']);
+    Route::post('/kostan', [KostanController::class, 'createKostan']);
+    Route::patch('/kostan/{id}', [KostanController::class, 'updateKostan']);
+    Route::delete('/kostan/{id}', [KostanController::class, 'deleteKostan']);
 
     // units
     Route::post('/unit', [UnitController::class, 'createUnit']);

@@ -9,6 +9,7 @@ use App\Http\Requests\UnitUpdateRequest;
 use App\Http\Resources\UnitResource;
 use App\ListIdleProperty;
 use App\ListPayment;
+use App\Perumahan;
 use App\Unit;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -57,35 +58,48 @@ class UnitController extends Controller
     {
         try {
             $data = $request->validated();
-
+            $perumahan = Perumahan::where('id', $data['id_parent'])->firstOrFail();
             $units = Unit::where('id_parent', $data['id_parent'])->get();
+            $unit_count = $units->count();
+            $data['kode_unit'] = $perumahan->kode_unit;
 
             if ($units->isNotEmpty()) {
                 $lastUnit = $units->last();
-                // $data['name'] = $lastUnit->
-                // Now you can use $lastUnit
-                // Extracting last number from the name attribute
+
                 preg_match('/(\d+)$/', $lastUnit['name'], $matches);
 
                 if (isset($matches[1])) {
                     $lastNumber = $matches[1];
                     // dd($lastNumber + 1);
-                    $data['name'] = $data['kode_unit'] . '-' . ($lastNumber + 1);
-                    dd($data['name']);
+                    for ($i = 1; $i <= $data['jumlah_unit']; $i++) {
+                        $data['name'] = $lastUnit->kode_unit . '-' . ($lastNumber + $i);
+                        $data['user_id'] = $lastUnit->user_id;
+                        $unit = new Unit($data);
+                        $unit->save();
+                        $unit_count++;
+                    }
                 } else {
-                    echo "No number found in the name attribute.";
+                    for ($i = 1; $i <= $data['jumlah_unit']; $i++) {
+                        $data['name'] = $lastUnit->kode_unit . '-' . ($i);
+                        $data['user_id'] = $lastUnit->user_id;
+                        $unit = new Unit($data);
+                        $unit->save();
+                        $unit_count++;
+                    }
                 }
             } else {
+                for ($i = 1; $i <= $data['jumlah_unit']; $i++) {
+                    $data['name'] = $data['kode_unit'] . '-' . $i;
+                    $data['user_id'] = Auth::user()->id;
+                    $unit = new Unit($data);
+                    $unit->save();
+                    $unit_count++;
+                }
             }
 
-            // if (Unit::where('name', $data['name'])->exists()) {
-            //     return ApiResponse::error('kode unit already registered, try another one.', 400);
-            // }
+            $perumahan->update(['jml_unit' => $unit_count]);
 
-            $unit = new Unit($data);
-            $unit->save();
-
-            return response()->json(ApiResponse::success('Success create perumahan', new UnitResource($unit)), 201);
+            return response()->json(ApiResponse::success('Success create unit', null), 201);
         } catch (\Exception $e) {
             return ApiResponse::error($e->getMessage(), 500); // Internal Server Error
         }
@@ -128,14 +142,20 @@ class UnitController extends Controller
 
 
             if (!empty($data['tanggal_mulai'])) {
-                $date1 = Carbon::createFromFormat('Y-m-d', $unit->tanggal_mulai);
+                if ($unit->tanggal_mulai) {
+                    $date1 = Carbon::createFromFormat('Y-m-d', $unit->tanggal_mulai);
+                } else {
+                    $date1 = Carbon::now();
+                }
                 $date2 = Carbon::createFromFormat('Y-m-d', $data['tanggal_mulai']);
                 if ($date1->lt($date2)) {
                     $data['tanggal_jatuh_tempo'] = $this->calculateDueDate($data['tanggal_mulai'], $data['periode_pembayaran']);
+
                     ListPayment::create([
                         'unit_id' => $unit->id,
                         'user_id' => $user->id,
                         'payment_date' => $data['tanggal_mulai'],
+                        'due_date' => $data['tanggal_jatuh_tempo'],
                     ]);
                 }
             }
@@ -156,6 +176,7 @@ class UnitController extends Controller
                     ]);
                 }
             }
+
 
             $unit->update($data);
 

@@ -34,7 +34,6 @@ class KontrakanCreateRequest extends FormRequest
             'jml_unit' => ['required'],
             'periode_pembayaran' => ['required'],
             'kode_unit' => ['required', 'max:5'],
-            'user_id' => ['required'],
         ];
     }
     protected function failedValidation(Validator $validator)

@@ -23,6 +23,8 @@ class UnitResource extends JsonResource
             'type' => $this->type,
             'status' => $this->status,
             'periode_pembayaran' => $this->periode_pembayaran,
+            'purchase_type' => $this->purchase_type,
+            'tenor' => $this->tenor,
             'nama_penghuni' => $this->nama_penghuni,
             'no_identitas' => $this->no_identitas,
             'alamat' => $this->alamat,

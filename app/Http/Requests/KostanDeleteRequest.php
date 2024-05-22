@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class PerumahanCreateRequest extends FormRequest
+class KostanDeleteRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,14 +26,7 @@ class PerumahanCreateRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => ['required', 'max:100'],
-            'alamat' => ['required', 'max:100'],
-            'provinsi' => ['required', 'max:100'],
-            'kota' => ['required', 'max:100'],
-            'kode_pos' => ['required', 'max:100'],
-            'jml_unit' => ['required'],
-            'periode_pembayaran' => ['required'],
-            'kode_unit' => ['required', 'max:5'],
+            'id' => ['required', 'max:10'],
         ];
     }
     protected function failedValidation(Validator $validator)

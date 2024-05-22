@@ -23,6 +23,8 @@ class Unit extends Model
         'type',
         'status',
         'periode_pembayaran',
+        'purchase_type',
+        'tenor',
         'nama_penghuni',
         'no_identitas',
         'alamat',

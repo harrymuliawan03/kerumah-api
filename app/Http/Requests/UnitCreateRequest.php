@@ -26,21 +26,9 @@ class UnitCreateRequest extends FormRequest
     public function rules()
     {
         return [
-            // 'name' => 'required|string|max:100',
-            // 'name' => 'required|string|max:100|unique:units,name',
-            'kode_unit' => 'required|string|max:100',
             'id_parent' => 'required|integer',
-            'user_id' => 'required|integer',
-            'status' => 'required|in:empty,filled,late',
-            'type' => 'required|in:perumahan,kontrakan,kostan',
-            'periode_pembayaran' => 'required|in:year,month',
-            'nama_penghuni' => 'nullable|string|max:100',
-            'no_identitas' => 'nullable|integer',
-            'alamat' => 'nullable|string',
-            'provinsi' => 'nullable|string',
-            'kota' => 'nullable|string',
-            'kode_pos' => 'nullable|integer',
-            'tanggal_mulai' => 'nullable|date',
+            // 'kode_unit' => 'required|string',
+            'jumlah_unit' => 'required|integer'
         ];
     }
     protected function failedValidation(Validator $validator)

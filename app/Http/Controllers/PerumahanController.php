@@ -56,7 +56,7 @@ class PerumahanController extends Controller
             return ApiResponse::error('kode unit already registered, try another one.', 400);
         }
 
-
+        $data['user_id'] = $user->id;
         $perumahan = new Perumahan($data);
         $perumahan->save();
 
@@ -72,6 +72,8 @@ class PerumahanController extends Controller
                 'user_id' => $user->id,
                 'type' => 'perumahan',
                 'status' => 'empty',
+                'purchase_type' => 'sewa',
+                'tenor' => 0,
                 // Set other attributes of Unit here
             ];
         }
@@ -93,14 +95,13 @@ class PerumahanController extends Controller
 
         $perumahan->update($data);
 
-        return response()->json(ApiResponse::success('Success create perumahan', new PerumahanResource($perumahan)), 201);
+        return response()->json(ApiResponse::success('Success update perumahan', new PerumahanResource($perumahan)), 201);
     }
 
-    public function deletePerumahan(PerumahanDeleteRequest $request): JsonResponse
+    public function deletePerumahan($id): JsonResponse
     {
         try {
-            $data = $request->validated();
-            $perumahan = Perumahan::where('id', $data['id'])->first();
+            $perumahan = Perumahan::where('id', $id)->first();
 
             if (!$perumahan) {
                 return ApiResponse::error('Perumahan not found', 400);

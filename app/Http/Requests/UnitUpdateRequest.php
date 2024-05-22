@@ -29,6 +29,8 @@ class UnitUpdateRequest extends FormRequest
             'status' => 'nullable|in:empty,filled,late',
             // 'type' => 'nullable|in:perumahan,kontrakan,kostan',
             'periode_pembayaran' => 'nullable|in:year,month',
+            'purchase_type' => 'nullable|in:sewa,angsuran',
+            'tenor' => 'nullable',
             'nama_penghuni' => 'nullable|string|max:100',
             'no_identitas' => 'nullable|integer',
             'alamat' => 'nullable|string',
@@ -38,7 +40,8 @@ class UnitUpdateRequest extends FormRequest
             'tanggal_mulai' => 'nullable|date',
         ];
     }
-    protected function failedValidation(Validator $validator) {
+    protected function failedValidation(Validator $validator)
+    {
         throw new HttpResponseException(response([
             "errors" => $validator->getMessageBag()
         ], 400));

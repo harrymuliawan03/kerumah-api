@@ -19,7 +19,7 @@ class CreateUnitsTable extends Migration
             $table->string('kode_unit', 100);
             $table->integer('id_parent');
             $table->unsignedBigInteger('user_id')->nullable(false);
-            $table->enum('status', ['empty', 'filled', 'late']);
+            $table->enum('status', ['empty', 'filled', 'late', 'paid_off']);
             $table->enum('type', ['perumahan', 'kontrakan', 'kostan']);
             $table->enum('periode_pembayaran', ['year', 'month']);
             $table->string('nama_penghuni', 100)->nullable();
