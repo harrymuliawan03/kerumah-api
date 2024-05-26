@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Kostan extends Model
 {
     use SoftDeletes;
-    protected $table = 'kontrakans';
+    protected $table = 'kostans';
     protected $primaryKey = 'id';
     protected $keyType = 'int';
     public $incrementing = true;
