@@ -27,7 +27,7 @@ class UnitCreateRequest extends FormRequest
     {
         return [
             'id_parent' => 'required|integer',
-            // 'kode_unit' => 'required|string',
+            'type' => 'required|string|in:kontrakan,perumahan,kostan',
             'jumlah_unit' => 'required|integer'
         ];
     }

@@ -10,6 +10,8 @@ use App\Http\Resources\UnitResource;
 use App\ListIdleProperty;
 use App\ListPayment;
 use App\Perumahan;
+use App\Kontrakan;
+use App\Kostan;
 use App\Unit;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -58,10 +60,20 @@ class UnitController extends Controller
     {
         try {
             $data = $request->validated();
-            $perumahan = Perumahan::where('id', $data['id_parent'])->firstOrFail();
+            $properti = null;
+
+            if($data['type'] == 'perumahan'){
+                $properti = Perumahan::where('id', $data['id_parent'])->firstOrFail();
+            }
+            if($data['type'] == 'kontrakan'){
+                $properti = Kontrakan::where('id', $data['id_parent'])->firstOrFail();
+            }
+            if($data['type'] == 'kostan'){
+                $properti = Kostan::where('id', $data['id_parent'])->firstOrFail();
+            }
             $units = Unit::where('id_parent', $data['id_parent'])->get();
             $unit_count = $units->count();
-            $data['kode_unit'] = $perumahan->kode_unit;
+            $data['kode_unit'] = $properti->kode_unit;
 
             if ($units->isNotEmpty()) {
                 $lastUnit = $units->last();
@@ -74,6 +86,7 @@ class UnitController extends Controller
                     for ($i = 1; $i <= $data['jumlah_unit']; $i++) {
                         $data['name'] = $lastUnit->kode_unit . '-' . ($lastNumber + $i);
                         $data['user_id'] = $lastUnit->user_id;
+                        $data['tenor'] = 0;
                         $unit = new Unit($data);
                         $unit->save();
                         $unit_count++;
@@ -82,6 +95,7 @@ class UnitController extends Controller
                     for ($i = 1; $i <= $data['jumlah_unit']; $i++) {
                         $data['name'] = $lastUnit->kode_unit . '-' . ($i);
                         $data['user_id'] = $lastUnit->user_id;
+                        $data['tenor'] = 0;
                         $unit = new Unit($data);
                         $unit->save();
                         $unit_count++;
@@ -91,13 +105,14 @@ class UnitController extends Controller
                 for ($i = 1; $i <= $data['jumlah_unit']; $i++) {
                     $data['name'] = $data['kode_unit'] . '-' . $i;
                     $data['user_id'] = Auth::user()->id;
+                    $data['tenor'] = 0;
                     $unit = new Unit($data);
                     $unit->save();
                     $unit_count++;
                 }
             }
 
-            $perumahan->update(['jml_unit' => $unit_count]);
+            $properti->update(['jml_unit' => $unit_count]);
 
             return response()->json(ApiResponse::success('Success create unit', null), 201);
         } catch (\Exception $e) {
