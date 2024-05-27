@@ -43,6 +43,10 @@ class Unit extends Model
     {
         return $this->belongsTo(Kontrakan::class, 'id_parent', 'id');
     }
+    public function kostan(): BelongsTo
+    {
+        return $this->belongsTo(Kostan::class, 'id_parent', 'id');
+    }
 
     public function listPayments()
     {

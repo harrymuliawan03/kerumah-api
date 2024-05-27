@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KontrakanController;
 use App\Http\Controllers\KostanController;
+use App\Http\Controllers\ListPaymentController;
 use App\Http\Controllers\PerumahanController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UserController;
@@ -64,4 +65,8 @@ Route::middleware(ApiAuthMiddleware::class)->group(function () {
 
     // dashboard
     Route::get('/data-calculation', [DashboardController::class, 'getCalculation']);
+
+    // Payment
+    Route::get('/payments', [ListPaymentController::class, 'getListPayments']);
+    Route::get('/payments/search', [ListPaymentController::class, 'getListPaymentsByKeyword']);
 });

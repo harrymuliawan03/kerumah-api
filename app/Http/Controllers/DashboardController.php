@@ -39,7 +39,7 @@ class DashboardController extends Controller
                 return ApiResponse::error('Unit not found', 404);
             }
 
-            $data['total_properties'] = $units->groupBy('id_parent')->count();
+            $data['total_properties'] = $units->groupBy('kode_unit')->count();
             $data['total_units'] = $units->count();
             $data['available_units'] = $units->where('status', 'empty')->count();
             $data['filled_units'] = $units->where('status', 'filled')->count();
