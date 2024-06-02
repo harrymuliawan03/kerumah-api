@@ -52,17 +52,17 @@ class PerumahanController extends Controller
         $data = $request->validated();
         $user = Auth::user();
 
-        if (Perumahan::where('kode_unit', $data['kode_unit'])->count() == 1) {
+        if (Perumahan::where('kode_unit', $data['kode_unit'])->where('user_id', $user->id)->count() == 1) {
             return ApiResponse::error('kode unit already registered, try another one.', 400);
         }
-
+        
         $data['user_id'] = $user->id;
         $perumahan = new Perumahan($data);
         $perumahan->save();
-
+        
         // Initialize an array to store all units
         $units = [];
-
+        
         // Create units based on jml_unit
         for ($i = 0; $i < $data['jml_unit']; $i++) {
             $units[] = [
@@ -74,6 +74,7 @@ class PerumahanController extends Controller
                 'status' => 'empty',
                 'purchase_type' => 'sewa',
                 'tenor' => 0,
+                'payment_no' => 0,
                 // Set other attributes of Unit here
             ];
         }

@@ -52,7 +52,7 @@ class KontrakanController extends Controller
         $data = $request->validated();
         $user = Auth::user();
 
-        if (Kontrakan::where('kode_unit', $data['kode_unit'])->count() == 1) {
+        if (Kontrakan::where('kode_unit', $data['kode_unit'])->where('user_id', $user->id)->count() == 1) {
             return ApiResponse::error('kode unit already registered, try another one.', 400);
         }
 
@@ -74,6 +74,7 @@ class KontrakanController extends Controller
                 'status' => 'empty',
                 'purchase_type' => 'sewa',
                 'tenor' => 0,
+                'payment_no' => 0,
                 // Set other attributes of Unit here
             ];
         }
