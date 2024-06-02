@@ -162,16 +162,17 @@ class UnitController extends Controller
                 } else {
                     $date1 = Carbon::now();
                 }
-                $date2 = Carbon::createFromFormat('Y-m-d', $data['tanggal_mulai']);
-                if ($date1->lt($date2)) {
+                // $date2 = Carbon::createFromFormat('Y-m-d', $data['tanggal_mulai']);
+                if ($unit->tanggal_jatuh_tempo == null) {
                     $data['tanggal_jatuh_tempo'] = $this->calculateDueDate($data['tanggal_mulai'], $data['periode_pembayaran']);
+                    // dd($data['tanggal_jatuh_tempo']);
 
-                    ListPayment::create([
-                        'unit_id' => $unit->id,
-                        'user_id' => $user->id,
-                        'payment_date' => $data['tanggal_mulai'],
-                        'due_date' => $data['tanggal_jatuh_tempo'],
-                    ]);
+                    // ListPayment::create([
+                    //     'unit_id' => $unit->id,
+                    //     'user_id' => $user->id,
+                    //     'payment_date' => $data['tanggal_mulai'],
+                    //     'due_date' => $data['tanggal_jatuh_tempo'],
+                    // ]);
                 }
             }
             if (!empty($data['status']) && $data['status'] === 'empty') {
@@ -214,20 +215,50 @@ class UnitController extends Controller
             $dueDate = Carbon::createFromFormat('Y-m-d', $unit->tanggal_jatuh_tempo);
             $currentDate = Carbon::now();
             $monthsDifference = $currentDate->diffInMonths($dueDate);
-            $isLate = ($monthsDifference >= 1) ? 1 : 0;
-            if ($currentDate->gte($dueDate)) {
-                ListPayment::create([
-                    'unit_id' => $unit->id,
-                    'user_id' => $user->id,
-                    'payment_date' => $currentDate,
-                    'due_date' => $unit->tanggal_jatuh_tempo,
-                    'isLate' => $isLate
-                ]);
-                $unit->tanggal_jatuh_tempo = $this->calculateDueDate($currentDate->format('Y-m-d'), $unit->periode_pembayaran);
-                $unit->save();
-            } else {
-                return ApiResponse::error('Payment failed', 404);
+            $isLate = $currentDate->gte($dueDate) ? 1 : 0;
+            $payment_no = $unit->payment_no + 1;
+            if($unit->status == 'paid_off'){
+                return ApiResponse::error('Payment failed, this unit already paid off', 404);
             }
+                // if ($currentDate->gte($dueDate)) {
+                    ListPayment::create([
+                        'unit_id' => $unit->id,
+                        'user_id' => $user->id,
+                        'payment_date' => $currentDate,
+                        'due_date' => $unit->tanggal_jatuh_tempo,
+                        'isLate' => $isLate
+                    ]);
+                    $unit->payment_no = $payment_no;
+                    if($payment_no == $unit->tenor){
+                        if($unit->purchase_type == 'angsuran'){
+                            $unit->status = 'paid_off';
+                        }else{
+                            $unit->status = 'empty';
+                            $unit->nama_penghuni = null;
+                            $unit->no_identitas = null;
+                            $unit->alamat = null;
+                            $unit->provinsi = null;
+                            $unit->kota = null;
+                            $unit->kode_pos = null;
+                            $unit->tanggal_mulai = null;
+                            $unit->kota = null;
+                            $unit->purchase_type = 'sewa';
+                            $unit->payment_no = 0;
+                            $unit->tenor = 0;
+                            ListIdleProperty::create([
+                                'unit_id' => $unit->id,
+                                'user_id' => $user->id,
+                            ]);
+                        }
+                        $unit->tanggal_jatuh_tempo = null;
+                        $unit->tanggal_lunas = $currentDate;
+                    }else{
+                        $unit->tanggal_jatuh_tempo = $this->calculateDueDate($unit->tanggal_jatuh_tempo, $unit->periode_pembayaran);
+                    }
+                    $unit->save();
+                // } else {
+                //     return ApiResponse::error('Payment failed', 404);
+                // }
 
             return response()->json(ApiResponse::success('Payment Successfully !', new UnitResource($unit)), 200);
         } catch (\Exception $e) {

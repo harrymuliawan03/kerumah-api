@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddColumnTenorToTableUnit extends Migration
+class AddColumnPaymentNo extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,7 @@ class AddColumnTenorToTableUnit extends Migration
     public function up()
     {
         Schema::table('units', function (Blueprint $table) {
-            $table->integer('tenor');
+            $table->integer('payment_no');
         });
     }
 
@@ -26,7 +26,7 @@ class AddColumnTenorToTableUnit extends Migration
     public function down()
     {
         Schema::table('units', function (Blueprint $table) {
-            $table->dropColumn('tenor');
+            $table->dropColumn('payment_no');
         });
     }
 }

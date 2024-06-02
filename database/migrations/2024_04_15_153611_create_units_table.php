@@ -30,6 +30,7 @@ class CreateUnitsTable extends Migration
             $table->integer('kode_pos')->nullable();
             $table->date('tanggal_mulai')->nullable();
             $table->date('tanggal_jatuh_tempo')->nullable();
+            $table->date('tanggal_lunas')->nullable();
             $table->timestamp('deleted_at')->nullable(); // Soft delete column
             $table->timestamps();
 

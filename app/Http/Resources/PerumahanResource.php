@@ -18,7 +18,7 @@ class PerumahanResource extends JsonResource
         $units = $this->units()->where('id_parent', $this->id)->where('type', 'perumahan')->get();
         $unitCount = $units->count();
         $unitAvailable = $units->where('status', 'empty')->count();
-        $unitFilled = $units->where('status', 'filled')->count();
+        $unitFilled = $units->where('status', '!=', 'empty')->count();
 
         return [
             'id' => $this->id,

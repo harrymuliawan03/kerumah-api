@@ -33,6 +33,8 @@ class UnitResource extends JsonResource
             'kode_pos' => $this->kode_pos,
             'tanggal_mulai' => $this->tanggal_mulai,
             'tanggal_jatuh_tempo' => $this->tanggal_jatuh_tempo,
+            'angsuran_no' => $this->payment_no,
+            'tanggal_lunas' => $this->tanggal_lunas,
         ];
     }
 }
